@@ -1,0 +1,27 @@
+{
+    "train": {
+        "images_folder"            : "/home/fanqimen/projects/severstal/data/train_images", 
+        "csv_file_path"            : "/home/fanqimen/projects/severstal/data/train_new.csv", 
+        "image_height"             : 256, 
+        "image_width"              : 1600, 
+        "aug_pipline"              : [],
+        "fold"                     : 0,
+        "batch_size"               : 16
+    }, 
+
+    "test": {
+        "images_folder"            : "/home/fanqimen/projects/severstal/data/test_images",
+        "image_height"             : 128,
+        "image_width"              : 800,
+        "aug_pipline"              : []
+    },
+
+    "model" : {
+        "type"                     : "Unet",
+        "backbone"                 : "resnet34",
+        "encoder_weights"          : "imagenet",
+        "n_class"                  : 4,
+        "activation"               : "sigmoid",
+        "loss_function"            : "dice_loss"
+    }
+}
