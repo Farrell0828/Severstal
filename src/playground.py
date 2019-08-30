@@ -109,3 +109,8 @@ c = a*b
 c[1, :, :, 0]
 
 #%%
+import numpy as np 
+a = np.random.randn(2, 8, 8, 3)
+a.argmax()
+
+#%%
