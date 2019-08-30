@@ -13,16 +13,18 @@ from utils import rle2maskResize
 class DataGenerator(Sequence):
     def __init__(self, 
                  config, 
+                 preprocessing,
                  n_class=4,
                  split='train', 
                  random_seed=606,
                  shuffle=False):
 
         super().__init__()
-        self.data_folder = config['images_folder']
+        self.preprocessing = preprocessing
         self.split = split
         self.n_class = n_class
         self.shuffle = shuffle
+        self.data_folder = config['images_folder']
         self.height = config['image_height']
         self.width = config['image_width']
         self.batch_size = config['batch_size']
@@ -64,6 +66,7 @@ class DataGenerator(Sequence):
             if y.sum() != self.batch_size * self.height * self.width:
                 warnings.warn('Some pixels have not only one label is true.')
         if self.aug_pipline != []: X = self.aug(X)
+        X = self.preprocessing(X)
         if self.split != 'test': 
             return X, y
         else:
