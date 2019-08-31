@@ -9,6 +9,7 @@ from keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau, Model
 from tensorflow.python.client import device_lib
 from dataset import DataGenerator 
 from metrics import dice_coef 
+from callbacks import DiceCoefCallback 
 
 class SMModel(object):
 
@@ -76,11 +77,13 @@ class SMModel(object):
                                      monitor='val_loss',
                                      save_weights_only=True, 
                                      save_best_only=True)
+        dice_coef_callback = DiceCoefCallback(val_generator)
 
         self.model.fit_generator(generator=train_generator, 
                                  epochs=config['epochs'],
                                  validation_data=val_generator, 
-                                 callbacks=[tensorboard, early_stopping, reduce_lr, checkpoint])
+                                 callbacks=[tensorboard, early_stopping, 
+                                            reduce_lr, checkpoint, dice_coef_callback])
 
         self.model.load_weights(save_weights_path)
         self.model.evaluate_generator(val_generator)
