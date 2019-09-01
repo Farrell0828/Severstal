@@ -55,6 +55,20 @@ def mask2pad(mask, pad=2):
     
     return mask 
 
+def run_length_encode(mask):
+    m = mask.T.flatten()
+    if m.sum() == 0:
+        rle=''
+    else:
+        start  = np.where(m[1: ] > m[:-1])[0]+2
+        end    = np.where(m[:-1] > m[1: ])[0]+2
+        length = end-start
+        rle = [start[0],length[0]]
+        for i in range(1,len(length)):
+            rle.extend([start[i],length[i]])
+        rle = ' '.join([str(r) for r in rle])
+    return rle
+
 def visualize(image, mask, original_image=None, original_mask=None):
     fontsize = 18
     if original_image is None and original_mask is None:
