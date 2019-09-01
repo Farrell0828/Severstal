@@ -1,5 +1,5 @@
 import keras 
-from postprocess import postprocess 
+from process import postprocess 
 
 class DiceCoefCallback(keras.callbacks.Callback):
     def __init__(self, generator):
@@ -51,8 +51,8 @@ class SWA(keras.callbacks.Callback):
         elif epoch > self.swa_epoch:    
             for i, layer in enumerate(self.model.layers):
                 self.swa_weights[i] = (self.swa_weights[i] * 
-                    (epoch - self.swa_epoch) + self.model.get_weights()[i])
-                    /((epoch - self.swa_epoch)  + 1)  
+                    (epoch - self.swa_epoch) + self.model.get_weights()[i]
+                    /((epoch - self.swa_epoch)  + 1))
 
         else:
             pass

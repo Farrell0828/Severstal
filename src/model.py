@@ -1,5 +1,6 @@
 
 import os 
+import json 
 import segmentation_models as sm 
 import tensorflow as tf 
 from keras.models import Model 
@@ -11,13 +12,14 @@ from dataset import DataGenerator
 from metrics import dice_coef 
 from callbacks import DiceCoefCallback 
 
+
 class SMModel(object):
 
     def __init__(self, config):
         self.type = config['type']
         self.backbone = config['backbone']
         self.n_class = config['n_class']
-        self.activate = config['activate']
+        self.activate = config['activation']
         self.encoder_weights = config.get('encoder_weights', None)
 
         local_device_protos = device_lib.list_local_devices()
@@ -31,22 +33,23 @@ class SMModel(object):
 
     def _build(self):
         if self.type == 'Unet':
-            model = sm.Unet(backbone_name=self.backbone, 
+            model = sm.Unet(input_shape=(128, 800, 3),
+                            backbone_name=self.backbone, 
                             classes=self.n_class,
                             activation=self.activate,
                             encoder_weights=self.encoder_weights)
 
         elif self.type == 'Linknet':
             model = sm.Linknet(backbone_name=self.backbone, 
-                                    classes=self.n_class, 
-                                    activation=self.activate, 
-                                    encoder_weights=self.encoder_weights)
+                               classes=self.n_class, 
+                               activation=self.activate, 
+                               encoder_weights=self.encoder_weights)
 
         elif self.type == 'FPN':
             model = sm.FPN(backbone_name=self.backbone, 
-                                classes=self.n_class, 
-                                activation=self.activate, 
-                                encoder_weights=self.encoder_weights)
+                           classes=self.n_class, 
+                           activation=self.activate, 
+                           encoder_weights=self.encoder_weights)
         
         else:
             raise ValueError('Model type {} not support now.'.format(self.type))
@@ -87,3 +90,11 @@ class SMModel(object):
 
         self.model.load_weights(save_weights_path)
         self.model.evaluate_generator(val_generator)
+
+if __name__ == '__main__':
+    os.environ['CUDA_VISIBLE_DEVICES'] = ''
+    config_path = './configs/config.json'
+    with open(config_path) as config_buffer:    
+        config = json.loads(config_buffer.read())
+    sm = SMModel(config['model'])
+    sm.model.summary()
