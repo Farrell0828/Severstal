@@ -1,3 +1,4 @@
+import cv2 
 import numpy as np 
 from keras.utils.np_utils import to_categorical
 
@@ -14,3 +15,12 @@ def postprocess(y_pred, threshold=0.5, height_scale=1.0,
     y_pred_counts = y_pred.sum(1, keepdims=True).sum(2, keepdims=True)
     mask = (y_pred_counts >= (np.array(min_counts) / (height_scale * width_scale)))
     return y_pred_bi * mask
+
+def post_process(mask, min_size):
+    num_component, component = cv2.connectedComponents(mask.astype(np.uint8))
+    predict = np.zeros((256, 1600), np.float32)
+    for c in range(1, num_component):
+        p = (component == c)
+        if p.sum() > min_size:
+            predict[p] = 1
+    return predict
