@@ -8,19 +8,19 @@
     },
 
     "train": {
-        "images_folder"            : "/home/fanqimen/projects/severstal/data/train_images", 
-        "csv_file_path"            : "/home/fanqimen/projects/severstal/data/train_new.csv", 
+        "images_folder"            : "/home/fanqimen/projects/Severstal/data/train_images", 
+        "csv_file_path"            : "/home/fanqimen/projects/Severstal/data/train_new.csv", 
         "image_height"             : 128, 
         "image_width"              : 800, 
         "aug_pipline"              : [],
         "fold"                     : 0,
         "batch_size"               : 16,
         "epochs"                   : 100,
-        "save_weights_folder"      : "/home/fanqimen/projects/severstal/k-fold/"
+        "save_weights_folder"      : "/home/fanqimen/projects/Severstal/k-fold/"
     }, 
 
     "test": {
-        "images_folder"            : "/home/fanqimen/projects/severstal/data/test_images",
+        "images_folder"            : "/home/fanqimen/projects/Severstal/data/test_images",
         "image_height"             : 128,
         "image_width"              : 800,
         "aug_pipline"              : []

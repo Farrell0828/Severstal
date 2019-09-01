@@ -5,9 +5,7 @@ class DiceCoefCallback(keras.callbacks.Callback):
     def __init__(self, generator):
         super(DiceCoefCallback, self).__init__()
         self.generator = generator
-
-    def on_train_begin(self):
-        return
+        self.eps = 1e-7
 
     def on_epoch_end(self, epoch, logs={}):
         dice_coef = 0
@@ -18,12 +16,9 @@ class DiceCoefCallback(keras.callbacks.Callback):
             y_pred = postprocess(y_pred, 0.5, height_scale, width_scale)
             inter = (y_true * y_pred).sum(1).sum(1)
             union = y_true.sum(1).sum(1) + y_pred.sum(1).sum(1)
-            dice_coef_batch = (inter + 1.0) / (union + 1.0)
-            y_true_is_empty = y_true.sum(1).sum(1) == 0
-            y_pred_is_not_empty = y_pred.sum(1).sum(1) > 0
-            mask = ~(y_true_is_empty & y_pred_is_not_empty)
-            dice_coef += (dice_coef_batch * mask).mean()
-        logs.update('dice_coef_score': dice_coef)
+            dice_coef_batch = (inter + self.eps) / (union + self.eps)
+            dice_coef += dice_coef_batch.mean()
+        logs.update({'dice_coef_score': dice_coef})
         print('Epoch: {}; Dice Coefficent score: {}.'.format(epoch+1), dice_coef)
 
 
