@@ -62,7 +62,8 @@ class SMModel(object):
         train_generator = DataGenerator(config=config,
                                         preprocessing=self.preprocessing,
                                         n_class=self.n_class, 
-                                        split='train')
+                                        split='train',
+                                        shuffle=True)
         val_generator = DataGenerator(config=config, 
                                       preprocessing=self.preprocessing,
                                       n_class=self.n_class,
@@ -101,18 +102,19 @@ class SMModel(object):
         self.model.load_weights(save_weights_path)
         self.model.evaluate_generator(val_generator)
     
-    def predict(self, config):
+    def predict(self, config, weights_path):
         test_generator = DataGenerator(config=config,
                                        preprocessing=self.preprocessing,
                                        n_class=self.n_class, 
                                        split='test')
-        return self.model.predict_generator(test_generator)
+        self.model.load_weights(weights_path)
+        return self.model.predict_generator(test_generator), test_generator.get_image_file_names()
 
 
 if __name__ == '__main__':
     os.environ['CUDA_VISIBLE_DEVICES'] = ''
     config_path = './configs/config.json'
-    with open(config_path) as config_buffer:    
+    with open(config_path) as config_buffer:
         config = json.loads(config_buffer.read())
     sm = SMModel(config['model'])
     sm.model.summary()

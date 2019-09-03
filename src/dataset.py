@@ -44,8 +44,8 @@ class DataGenerator(Sequence):
                 raise ValueError("Split '{}' not support now.".format(split))
             self.n_samples = len(self.df)
         else:
-            self.image_file_names = glob(self.data_folder + '/*')
-            self.n_samples = len(self.image_file_names)
+            self.image_file_paths = glob(self.data_folder + '/*')
+            self.n_samples = len(self.image_file_paths)
 
         self.on_epoch_end()
 
@@ -61,7 +61,7 @@ class DataGenerator(Sequence):
         X = np.empty((self.batch_size, self.height, self.width, 3), dtype=np.float32)
         indexes = self.indexes[index*self.batch_size : (index+1)*self.batch_size]
         if self.split != 'test':
-            y = np.empty((self.batch_size, self.height, self.width, self.n_class), dtype=np.int8)
+            y = np.empty((self.batch_size, self.height, self.width, self.n_class), dtype=np.uint8)
             for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
                 X[i, ] = Image.open(os.path.join(self.data_folder, file_name)).resize((self.width, self.height))
                 for j in range(4):
@@ -72,7 +72,7 @@ class DataGenerator(Sequence):
                 if y.sum() != self.batch_size * self.height * self.width:
                     warnings.warn('Some pixels have not only one label is true.')
         else:
-            for i, file_name in enumerate([self.image_file_names[index] for index in indexes]):
+            for i, file_name in enumerate([self.image_file_paths[index] for index in indexes]):
                 X[i, ] = Image.open(file_name).resize((self.width, self.height))
 
         if self.aug_pipline != []: X = self.aug(X)
@@ -85,6 +85,12 @@ class DataGenerator(Sequence):
 
     def aug(self, X):
         return X
+
+    def get_image_file_names(self):
+        if self.split == 'test':
+            return [file_path.split('/')[-1] for file_path in self.image_file_paths]
+        else:
+            return list(self.df['ImageId'])
 
 if __name__ == '__main__':
     config_path = './configs/config.json'

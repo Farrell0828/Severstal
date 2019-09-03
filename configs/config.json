@@ -22,6 +22,7 @@
 
     "test": {
         "images_folder"            : "/home/fanqimen/projects/Severstal/data/test_images",
+        "sample_submission_path"   : "/home/fanqimen/projects/Severstal/data/sample_submission.csv",
         "image_height"             : 128,
         "image_width"              : 800,
         "aug_pipline"              : [],
