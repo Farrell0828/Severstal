@@ -32,7 +32,7 @@ def _main_():
     assert(len(preds) == len(image_file_names))
     encoded_pixels = []
     image_id_class_id = []
-    preds = postprocess(preds)
+    preds = postprocess(preds, 0.5, True, False)
     for i in range(len(preds)):
         for j in range(4):
             encoded_pixels.append(run_length_encode(preds[i, :, :, j]))
