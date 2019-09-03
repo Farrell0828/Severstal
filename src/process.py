@@ -3,7 +3,7 @@ import numpy as np
 from keras.utils.np_utils import to_categorical
 
 def postprocess(y_pred, threshold=0.5, height_scale=1.0, 
-                width_scale=1.0, min_counts=[800, 1000, 1800, 5000]):
+                width_scale=1.0, min_counts=[0, 0, 0, 0]):
     n_class = y_pred.shape[-1]
     if n_class == 4:
         y_pred_bi = (y_pred >= threshold).astype(int)
@@ -12,7 +12,7 @@ def postprocess(y_pred, threshold=0.5, height_scale=1.0,
     else:
         raise ValueError('The number of channels: {} not valid, '\
             'only support 4 or 5.'.format(n_class))
-    y_pred_counts = y_pred.sum(1, keepdims=True).sum(2, keepdims=True)
+    y_pred_counts = y_pred_bi.sum(1, keepdims=True).sum(2, keepdims=True)
     mask = (y_pred_counts >= (np.array(min_counts) / (height_scale * width_scale)))
     return y_pred_bi * mask
 

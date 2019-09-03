@@ -3,8 +3,8 @@
         "type"                     : "Unet",
         "backbone"                 : "resnet34",
         "encoder_weights"          : "imagenet",
-        "n_class"                  : 4,
-        "activation"               : "sigmoid"
+        "n_class"                  : 5,
+        "activation"               : "softmax"
     },
 
     "train": {
@@ -14,7 +14,8 @@
         "image_width"              : 800, 
         "aug_pipline"              : [],
         "fold"                     : 0,
-        "batch_size"               : 16,
+        "init_lr"                  : 1e-3,
+        "batch_size"               : 32,
         "epochs"                   : 100,
         "save_weights_folder"      : "/home/fanqimen/projects/Severstal/k-fold/"
     }, 
@@ -23,6 +24,7 @@
         "images_folder"            : "/home/fanqimen/projects/Severstal/data/test_images",
         "image_height"             : 128,
         "image_width"              : 800,
-        "aug_pipline"              : []
+        "aug_pipline"              : [],
+        "batch_size"               : 64
     }
 }

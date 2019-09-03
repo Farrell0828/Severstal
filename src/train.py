@@ -1,7 +1,9 @@
 import argparse 
 import json 
-
+import os 
 from model import SMModel 
+
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
