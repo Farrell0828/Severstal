@@ -2,12 +2,13 @@ import argparse
 import json 
 import os 
 import cv2 
-import pandas 
+import pandas as pd 
+from tqdm import tqdm 
 from model import SMModel 
 from process import postprocess 
 from utils import run_length_encode 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
@@ -28,19 +29,19 @@ def _main_():
         config = json.loads(config_buffer.read())
     weights_path = args.weights_path
     sm_model = SMModel(config['model'])
+    sm_model.model.summary()
     preds, image_file_names = sm_model.predict(config['test'], weights_path)
-    assert(len(preds) == len(image_file_names))
+    print(len(preds), len(image_file_names))
     encoded_pixels = []
     image_id_class_id = []
     preds = postprocess(preds, 0.5, True, False)
-    for i in range(len(preds)):
+    for i in tqdm(range(len(preds))):
         for j in range(4):
             encoded_pixels.append(run_length_encode(preds[i, :, :, j]))
             image_id_class_id.append(image_file_names[i] + '_{}'.format(j + 1))
-    df = pd.read_csv(config['test']['sample_submission_path'])
-    df['ImageId_ClassId'] = image_id_class_id
-    df['EncodedPixels'] = encoded_pixels
-    df.to_csv('submission.csv', index=False)
+    df = pd.DataFrame(data=encoded_pixels, index=image_id_class_id, columns=['EncodedPixels'])
+    df.index.name = 'ImageId_ClassId'
+    df.to_csv('submission.csv')
 
 if __name__ == '__main__':
     _main_()

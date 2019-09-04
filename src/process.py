@@ -13,7 +13,10 @@ def postprocess(y_pred, threshold=0.5,
     else:
         raise ValueError('The number of channels: {} not valid, '\
             'only support 4 or 5.'.format(n_class))
-    processed_pred = np.empty(y_pred_bi.shape, dtype=np.uint8)
+    if return_full_size:
+        processed_pred = np.empty((y_pred.shape[0], 256, 1600, 4), dtype=np.uint8)
+    else:
+        processed_pred = np.empty(y_pred_bi.shape, dtype=np.uint8)
     for i in range(len(y_pred_bi)):
         for j in range(4):
             processed_pred[i, :, :, j] = postprocess_sigle_channel(y_pred_bi[i, :, :, j], 

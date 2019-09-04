@@ -80,8 +80,8 @@ class SMModel(object):
                                metrics=[sm.metrics.iou_score, dice_coef])
 
         tensorboard = TensorBoard(log_dir='./logs', update_freq='batch')
-        reduce_lr = ReduceLROnPlateau(patience=5, verbose=1, min_delta=1e-4)
-        early_stopping = EarlyStopping(patience=8, verbose=1, min_delta=1e-4)
+        reduce_lr = ReduceLROnPlateau(patience=5, verbose=1, min_delta=1e-6)
+        early_stopping = EarlyStopping(patience=8, verbose=1, min_delta=1e-6)
         dice_coef_callback = DiceCoefCallback(val_generator)
 
         save_weights_path = os.path.join(config['save_weights_folder'], 
@@ -108,7 +108,7 @@ class SMModel(object):
                                        n_class=self.n_class, 
                                        split='test')
         self.model.load_weights(weights_path)
-        return self.model.predict_generator(test_generator), test_generator.get_image_file_names()
+        return self.model.predict_generator(test_generator, verbose=1), test_generator.get_image_file_names()
 
 
 if __name__ == '__main__':
