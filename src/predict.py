@@ -6,9 +6,10 @@ import pandas as pd
 from tqdm import tqdm 
 from model import SMModel 
 from process import postprocess 
+from dataset import DataGenerator 
 from utils import run_length_encode 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
@@ -30,15 +31,20 @@ def _main_():
     weights_path = args.weights_path
     sm_model = SMModel(config['model'])
     sm_model.model.summary()
-    preds, image_file_names = sm_model.predict(config['test'], weights_path)
-    print(len(preds), len(image_file_names))
+    sm_model.model.load_weights(weights_path)
+    test_generator = DataGenerator(config=config['test'],
+                                   preprocessing=sm_model.preprocessing,
+                                   n_class=sm_model.n_class, 
+                                   split='test')
     encoded_pixels = []
     image_id_class_id = []
-    preds = postprocess(preds, 0.5, True, False)
-    for i in tqdm(range(len(preds))):
-        for j in range(4):
-            encoded_pixels.append(run_length_encode(preds[i, :, :, j]))
-            image_id_class_id.append(image_file_names[i] + '_{}'.format(j + 1))
+    for X, filenames in tqdm(list(test_generator)):
+        preds = sm_model.model.predict_on_batch(X)
+        preds = postprocess(preds, 0.5, True, False)
+        for i in range(len(preds)):
+            for j in range(4):
+                encoded_pixels.append(run_length_encode(preds[i, :, :, j]))
+                image_id_class_id.append(filenames[i] + '_{}'.format(j + 1))
     df = pd.DataFrame(data=encoded_pixels, index=image_id_class_id, columns=['EncodedPixels'])
     df.index.name = 'ImageId_ClassId'
     df.to_csv('submission.csv')

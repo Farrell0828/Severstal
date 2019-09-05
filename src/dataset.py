@@ -50,7 +50,7 @@ class DataGenerator(Sequence):
         self.on_epoch_end()
 
     def __len__(self):
-        return int(np.floor(self.n_samples / self.batch_size))
+        return int(np.ceil(self.n_samples / self.batch_size))
     
     def on_epoch_end(self):
         self.indexes = np.arange(self.n_samples)
@@ -58,10 +58,11 @@ class DataGenerator(Sequence):
             np.random.shuffle(self.indexes)
     
     def __getitem__(self, index): 
-        X = np.empty((self.batch_size, self.height, self.width, 3), dtype=np.float32)
         indexes = self.indexes[index*self.batch_size : (index+1)*self.batch_size]
+        X = np.empty((len(indexes), self.height, self.width, 3), dtype=np.float32)
+        
         if self.split != 'test':
-            y = np.empty((self.batch_size, self.height, self.width, self.n_class), dtype=np.uint8)
+            y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
             for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
                 X[i, ] = Image.open(os.path.join(self.data_folder, file_name)).resize((self.width, self.height))
                 for j in range(4):
@@ -69,11 +70,13 @@ class DataGenerator(Sequence):
                                                    d_height=self.height, d_width=self.width)
             if self.n_class == 5:
                 y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
-                if y.sum() != self.batch_size * self.height * self.width:
+                if y.sum() != len(indexes) * self.height * self.width:
                     warnings.warn('Some pixels have not only one label is true.')
         else:
+            filenames = []
             for i, file_name in enumerate([self.image_file_paths[index] for index in indexes]):
                 X[i, ] = Image.open(file_name).resize((self.width, self.height))
+                filenames.append(file_name.split('/')[-1])
 
         if self.aug_pipline != []: X = self.aug(X)
         if self.preprocessing is not None: X = self.preprocessing(X)
@@ -81,16 +84,11 @@ class DataGenerator(Sequence):
         if self.split != 'test': 
             return X, y
         else:
-            return X
+            return X, filenames
 
     def aug(self, X):
         return X
 
-    def get_image_file_names(self):
-        if self.split == 'test':
-            return [file_path.split('/')[-1] for file_path in self.image_file_paths]
-        else:
-            return list(self.df['ImageId'])
 
 if __name__ == '__main__':
     config_path = './configs/config.json'

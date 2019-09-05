@@ -84,8 +84,10 @@ class SMModel(object):
         early_stopping = EarlyStopping(patience=8, verbose=1, min_delta=1e-6)
         dice_coef_callback = DiceCoefCallback(val_generator)
 
-        save_weights_path = os.path.join(config['save_weights_folder'], 
-                                         'val_best_fold_{}.h5'.format(config['fold']))
+        save_weights_path = os.path.join(config['save_model_folder'], 
+                                         'val_best_fold_{}_weights.h5'.format(config['fold']))
+        save_model_path = os.path.join(config['save_model_folder'], 
+                                         'val_best_fold_{}_model.h5'.format(config['fold']))
         checkpoint = ModelCheckpoint(save_weights_path, 
                                      monitor='val_loss',
                                      verbose=1,
@@ -100,15 +102,8 @@ class SMModel(object):
                                  callbacks=callbacks)
 
         self.model.load_weights(save_weights_path)
+        self.model.save(save_model_path)
         self.model.evaluate_generator(val_generator)
-    
-    def predict(self, config, weights_path):
-        test_generator = DataGenerator(config=config,
-                                       preprocessing=self.preprocessing,
-                                       n_class=self.n_class, 
-                                       split='test')
-        self.model.load_weights(weights_path)
-        return self.model.predict_generator(test_generator, verbose=1), test_generator.get_image_file_names()
 
 
 if __name__ == '__main__':
