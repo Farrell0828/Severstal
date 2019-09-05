@@ -24,9 +24,10 @@ def postprocess(y_pred, threshold=0.5,
                                                                    filter_small_region)
     return processed_pred
 
-def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size=0):
+def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size=2048):
     if return_full_size and mask.shape != (256, 1600):
         mask = cv2.resize(mask, (1600, 256), interpolation=cv2.INTER_NEAREST)
+    min_size = min_size * (mask.shape[0] / 256)**2
     if filter_small_region:
         num_component, component = cv2.connectedComponents(mask.astype(np.uint8))
         mask = np.zeros(mask.shape, np.uint8)

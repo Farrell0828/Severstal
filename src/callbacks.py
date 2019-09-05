@@ -11,7 +11,7 @@ class DiceCoefCallback(keras.callbacks.Callback):
         dice_coef = 0
         for X, y_true in list(self.generator):
             y_pred = self.model.predict(X)
-            y_pred = postprocess(y_pred)
+            y_pred = postprocess(y_pred, 0.5, False, True)
             y_true = y_true[:, :, :, :4]
             inter = (y_true * y_pred).sum(1).sum(1)
             union = y_true.sum(1).sum(1) + y_pred.sum(1).sum(1)
