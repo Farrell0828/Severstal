@@ -4,7 +4,8 @@ from keras.utils.np_utils import to_categorical
 
 def postprocess(y_pred, threshold=0.5, 
                 return_full_size=False, 
-                filter_small_region=False):
+                filter_small_region=False, 
+                min_size=2048):
     n_class = y_pred.shape[-1]
     if n_class == 4:
         y_pred_bi = (y_pred >= threshold).astype(int)
@@ -21,10 +22,11 @@ def postprocess(y_pred, threshold=0.5,
         for j in range(4):
             processed_pred[i, :, :, j] = postprocess_sigle_channel(y_pred_bi[i, :, :, j], 
                                                                    return_full_size, 
-                                                                   filter_small_region)
+                                                                   filter_small_region, 
+                                                                   min_size)
     return processed_pred
 
-def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size=2048):
+def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size):
     if return_full_size and mask.shape != (256, 1600):
         mask = cv2.resize(mask, (1600, 256), interpolation=cv2.INTER_NEAREST)
     min_size = min_size * (mask.shape[0] / 256)**2
