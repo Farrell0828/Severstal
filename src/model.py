@@ -71,25 +71,35 @@ class SMModel(object):
         if self.activate == 'sigmoid':
             loss = sm.losses.jaccard_loss
             dice_coef = dice_coef_for_sigmoid
+            monitor = 'val_dice_coef_for_sigmoid'
         elif self.activate == 'softmax':
             loss = categorical_focal_loss(alpha=config['alpha'], gamma=config['gamma'])
             dice_coef = dice_coef_for_softmax
+            monitor = 'val_dice_coef_for_softmax'
 
         self.model.compile(optimizer=Adam(lr=config['init_lr']),
-                               loss=loss,
-                               metrics=[sm.metrics.iou_score, dice_coef])
+                           loss=loss,
+                           metrics=[sm.metrics.iou_score, dice_coef])
 
         tensorboard = TensorBoard(log_dir='./logs', update_freq='batch')
-        reduce_lr = ReduceLROnPlateau(patience=5, verbose=1, min_delta=1e-6)
-        early_stopping = EarlyStopping(patience=8, verbose=1, min_delta=1e-6)
+        reduce_lr = ReduceLROnPlateau(patience=8, 
+                                      monitor=monitor,
+                                      mode='max',
+                                      verbose=1, 
+                                      min_delta=1e-6)
+        early_stopping = EarlyStopping(patience=12, 
+                                       monitor=monitor,
+                                       mode='max',
+                                       verbose=1, 
+                                       min_delta=1e-6)
         dice_coef_callback = DiceCoefCallback(val_generator)
-
         save_weights_path = os.path.join(config['save_model_folder'], 
                                          'val_best_fold_{}_weights.h5'.format(config['fold']))
         save_model_path = os.path.join(config['save_model_folder'], 
                                          'val_best_fold_{}_model.h5'.format(config['fold']))
         checkpoint = ModelCheckpoint(save_weights_path, 
-                                     monitor='val_loss',
+                                     monitor=monitor,
+                                     mode='max',
                                      verbose=1,
                                      save_weights_only=True, 
                                      save_best_only=True)
