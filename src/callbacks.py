@@ -15,7 +15,7 @@ class DiceCoefCallback(keras.callbacks.Callback):
             y_true = y_true[:, :, :, :4]
             inter = (y_true * y_pred).sum(1).sum(1)
             union = y_true.sum(1).sum(1) + y_pred.sum(1).sum(1)
-            dice_coef_batch = (inter + self.eps) / (union + self.eps)
+            dice_coef_batch = (2*inter + self.eps) / (union + self.eps)
             dice_coef += dice_coef_batch.sum()
         dice_coef /= (self.generator.n_samples * 4)
         logs.update({'dice_coef_score': dice_coef})
