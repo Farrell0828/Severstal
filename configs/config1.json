@@ -19,7 +19,7 @@
         "init_lr"                  : 1e-3,
         "batch_size"               : 32,
         "epochs"                   : 100,
-        "save_model_folder"        : "/home/fanqimen/projects/Severstal/k-fold/"
+        "save_model_folder"        : "/home/fanqimen/projects/Severstal/k-fold/config1/"
     }, 
 
     "test": {
