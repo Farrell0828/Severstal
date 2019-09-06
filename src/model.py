@@ -72,7 +72,7 @@ class SMModel(object):
             loss = sm.losses.jaccard_loss
             dice_coef = dice_coef_for_sigmoid
         elif self.activate == 'softmax':
-            loss = categorical_focal_loss(alpha=.25, gamma=2)
+            loss = categorical_focal_loss(alpha=config['alpha'], gamma=config['gamma'])
             dice_coef = dice_coef_for_softmax
 
         self.model.compile(optimizer=Adam(lr=config['init_lr']),
