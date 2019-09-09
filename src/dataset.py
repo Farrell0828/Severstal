@@ -17,13 +17,15 @@ class DataGenerator(Sequence):
                  preprocessing=None,
                  n_class=4,
                  split='train', 
+                 full_size_mask=False,
                  random_seed=606,
                  shuffle=False):
 
         super().__init__()
         self.preprocessing = preprocessing
-        self.split = split
         self.n_class = n_class
+        self.split = split
+        self.full_size_mask = full_size_mask
         self.shuffle = shuffle
         self.data_folder = config['images_folder']
         self.height = config['image_height']
@@ -62,12 +64,19 @@ class DataGenerator(Sequence):
         X = np.empty((len(indexes), self.height, self.width, 3), dtype=np.float32)
         
         if self.split != 'test':
-            y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
+            if self.full_size_mask:
+                y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
+            else:
+                y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
             for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
                 X[i, ] = Image.open(os.path.join(self.data_folder, file_name)).resize((self.width, self.height))
                 for j in range(4):
-                    y[i, :, :, j] = rle2maskResize(rle=self.df['EncodedPixels_' + str(j+1)].iloc[indexes[i]], 
-                                                   d_height=self.height, d_width=self.width)
+                    if self.full_size_mask:
+                        y[i, :, :, j] = rle2maskResize(rle=self.df['EncodedPixels_' + str(j+1)].iloc[indexes[i]], 
+                                                       d_height=256, d_width=1600)
+                    else:
+                        y[i, :, :, j] = rle2maskResize(rle=self.df['EncodedPixels_' + str(j+1)].iloc[indexes[i]], 
+                                                       d_height=self.height, d_width=self.width)
             if self.n_class == 5:
                 y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
                 if y.sum() != len(indexes) * self.height * self.width:
