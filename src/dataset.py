@@ -65,7 +65,7 @@ class DataGenerator(Sequence):
         
         if self.split != 'test':
             if self.full_size_mask:
-                y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
+                y = np.empty((len(indexes), 256, 1600, self.n_class), dtype=np.uint8)
             else:
                 y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
             for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
@@ -79,7 +79,8 @@ class DataGenerator(Sequence):
                                                        d_height=self.height, d_width=self.width)
             if self.n_class == 5:
                 y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
-                if y.sum() != len(indexes) * self.height * self.width:
+                if ((not self.full_size_mask and y.sum() != len(indexes) * self.height * self.width)
+                    or (self.full_size_mask and y.sum() != len(indexes) * 256 * 1600)):
                     warnings.warn('Some pixels have not only one label is true.')
         else:
             filenames = []
