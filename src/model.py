@@ -113,7 +113,6 @@ class SMModel(object):
 
         self.model.load_weights(save_weights_path)
         self.model.save(save_model_path)
-        self.model.evaluate_generator(val_generator)
 
 
 if __name__ == '__main__':
