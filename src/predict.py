@@ -40,7 +40,7 @@ def _main_():
     image_id_class_id = []
     for X, filenames in tqdm(list(test_generator)):
         preds = sm_model.model.predict_on_batch(X)
-        preds = postprocess(preds, 0.5, True, False)
+        preds = postprocess(preds, config['postprocess'], True)
         for i in range(len(preds)):
             for j in range(4):
                 encoded_pixels.append(run_length_encode(preds[i, :, :, j]))

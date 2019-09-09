@@ -6,12 +6,17 @@ class DiceCoefCallback(keras.callbacks.Callback):
         super(DiceCoefCallback, self).__init__()
         self.generator = generator
         self.eps = 1e-7
+        self.postprocess_config = {
+            'threshold': 0.5, 
+            'filter_small_region': False, 
+            'min_size': 0
+        }
 
     def on_epoch_end(self, epoch, logs={}):
         dice_coef = 0
         for X, y_true in list(self.generator):
             y_pred = self.model.predict(X)
-            y_pred = postprocess(y_pred, 0.5, False, True)
+            y_pred = postprocess(y_pred, self.postprocess_config)
             y_true = y_true[:, :, :, :4]
             inter = (y_true * y_pred).sum(1).sum(1)
             union = y_true.sum(1).sum(1) + y_pred.sum(1).sum(1)
@@ -19,7 +24,7 @@ class DiceCoefCallback(keras.callbacks.Callback):
             dice_coef += dice_coef_batch.sum()
         dice_coef /= (self.generator.n_samples * 4)
         logs.update({'dice_coef_score': dice_coef})
-        print('Epoch {} Validation Dice Coefficent Score after Postprocess: {}.\n'.format(epoch+1, dice_coef))
+        print('Epoch {} Validation Dice Coefficent Score: {}.\n'.format(epoch+1, dice_coef))
 
 
 class SWA(keras.callbacks.Callback):

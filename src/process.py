@@ -2,13 +2,10 @@ import cv2
 import numpy as np 
 from keras.utils.np_utils import to_categorical
 
-def postprocess(y_pred, threshold=0.5, 
-                return_full_size=False, 
-                filter_small_region=False, 
-                min_size=2048):
+def postprocess(y_pred, config, return_full_size=False):
     n_class = y_pred.shape[-1]
     if n_class == 4:
-        y_pred_bi = (y_pred >= threshold).astype(int)
+        y_pred_bi = (y_pred >= config['threshold']).astype(int)
     elif n_class == 5:
         y_pred_bi = to_categorical(y_pred.argmax(axis=-1), num_classes=5)[:, :, :, :4]
     else:
@@ -22,8 +19,8 @@ def postprocess(y_pred, threshold=0.5,
         for j in range(4):
             processed_pred[i, :, :, j] = postprocess_sigle_channel(y_pred_bi[i, :, :, j], 
                                                                    return_full_size, 
-                                                                   filter_small_region, 
-                                                                   min_size)
+                                                                   config['filter_small_region'], 
+                                                                   config['min_size'])
     return processed_pred
 
 def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size):

@@ -29,5 +29,11 @@
         "image_width"              : 800,
         "aug_pipline"              : [],
         "batch_size"               : 64
+    },
+
+    "postprocess": {
+        "threshold"                : 0.5,
+        "filter_small_region"      : true,
+        "min_size"                 : 2048
     }
 }
