@@ -9,7 +9,7 @@ from process import postprocess
 from dataset import DataGenerator 
 from utils import run_length_encode 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(

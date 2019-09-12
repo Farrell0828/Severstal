@@ -3,6 +3,5 @@ data/
 k-fold/
 .vscode/
 logs/
-submissions/
 playground.py
 model.pyc

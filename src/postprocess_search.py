@@ -8,7 +8,7 @@ from process import postprocess
 from dataset import DataGenerator 
 from utils import dice_coef_score 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
@@ -59,7 +59,7 @@ def _main_():
         config['postprocess']['min_size'] = [min_size_1, min_size_2, min_size_3, min_size_4]
         score = oof_eval(sm_model, config)
         if score > best_score:
-            best_config = config['postprocess']
+            best_config = config['postprocess'].copy()
             best_score = score
     print(best_score)
     print(best_config)

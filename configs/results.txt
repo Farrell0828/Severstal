@@ -1,0 +1,42 @@
+config1_1
+    threshold: 0.5
+    filter_small_region: true
+    min_size: 2048
+    CV Dice Coef Score: 0.92419
+
+config1_2
+    threshold: 0.5
+    filter_small_region: true
+    min_size: 1024
+    CV Dice Coef Score: 0.92778
+
+config1_3
+    threshold: 0.5
+    filter_small_region: true
+    min_size: 512
+    CV Dice Coef Score: 0.92683
+
+config1_4
+    threshold: 0.5
+    filter_small_region: true
+    min_size: [256, 512, 1024, 2048]
+    CV Dice Coef Score: 0.92709
+
+config1 postprocess search
+    threshold: 0.5
+    filter_small_region: true
+
+        min_size: [64, 128, 256, 512]
+        CV Dice Coef Score: 0.92119
+
+        min_size: [128, 256, 512, 1024]
+        CV Dice Coef Score: 0.92431
+
+        min_size: [256, 512, 1024, 2048]
+        CV Dice Coef Score: 0.92709
+
+        min_size: [512, 1024, 2048, 4096]
+        CV Dice Coef Score: 0.92708
+
+        min_size: [1024, 2048, 4096, 8192]
+        CV Dice Coef Score: 
