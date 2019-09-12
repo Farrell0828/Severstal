@@ -9,7 +9,7 @@ class DiceCoefCallback(keras.callbacks.Callback):
         self.postprocess_config = {
             'threshold': 0.5, 
             'filter_small_region': False, 
-            'min_size': 0
+            'min_size': [0, 0, 0, 0]
         }
 
     def on_epoch_end(self, epoch, logs={}):

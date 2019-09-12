@@ -20,7 +20,7 @@ def postprocess(y_pred, config, return_full_size=False):
             processed_pred[i, :, :, j] = postprocess_sigle_channel(y_pred_bi[i, :, :, j], 
                                                                    return_full_size, 
                                                                    config['filter_small_region'], 
-                                                                   config['min_size'])
+                                                                   config['min_size'][j])
     return processed_pred
 
 def postprocess_sigle_channel(mask, return_full_size, filter_small_region, min_size):
