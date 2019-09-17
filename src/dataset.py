@@ -32,6 +32,7 @@ class DataGenerator(Sequence):
         self.height = config['image_height']
         self.width = config['image_width']
         self.batch_size = config['batch_size']
+        self.aug_pipline = config['aug_pipline']
         if config['aug_pipline'] != []:
             self.build_aug()
         
