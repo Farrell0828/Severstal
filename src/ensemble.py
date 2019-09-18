@@ -7,7 +7,7 @@ from tqdm import tqdm
 from model import SMModel 
 from process import postprocess 
 from dataset import DataGenerator 
-from utils import run_length_encode 
+from utils import run_length_encode, flip  
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
@@ -42,7 +42,11 @@ def _main_():
         preds = 0
         for i in range(5):
             preds += sm_models[i].model.predict_on_batch(X)
-        preds /= 5
+            for flip_type in ['ud', 'lr', 'udlr']:
+                X_temp = flip(X.copy(), flip_type)
+                pred_temp = sm_models[i].model.predict_on_batch(X_temp)
+                preds += flip(pred_temp, flip_type)
+        preds /= (5 * 4)
         preds = postprocess(preds, config['postprocess'], True)
         for i in range(len(preds)):
             for j in range(4):
