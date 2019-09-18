@@ -4,6 +4,8 @@ import json
 import keras 
 import segmentation_models as sm 
 import tensorflow as tf 
+import numpy as np 
+from keras import backend as K 
 from keras.models import Model 
 from keras.losses import binary_crossentropy, categorical_crossentropy 
 from keras.optimizers import Adam, SGD 
@@ -73,6 +75,8 @@ class SMModel(object):
             dice_coef = dice_coef_for_sigmoid
             monitor = 'val_dice_coef_for_sigmoid'
         elif self.activate == 'softmax':
+            bias = self.model.layers[-2].weights[1]
+            K.set_value(bias, np.full(bias.shape, -1.99))
             loss = categorical_focal_loss(alpha=config['alpha'], gamma=config['gamma'])
             dice_coef = dice_coef_for_softmax
             monitor = 'val_dice_coef_for_softmax'
