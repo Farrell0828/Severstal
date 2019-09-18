@@ -42,11 +42,15 @@ def _main_():
         preds = 0
         for i in range(5):
             preds += sm_models[i].model.predict_on_batch(X)
-            for flip_type in ['ud', 'lr', 'udlr']:
-                X_temp = flip(X.copy(), flip_type)
-                pred_temp = sm_models[i].model.predict_on_batch(X_temp)
-                preds += flip(pred_temp, flip_type)
-        preds /= (5 * 4)
+            if config['test']['tta']:
+                for flip_type in ['ud', 'lr', 'udlr']:
+                    X_temp = flip(X.copy(), flip_type)
+                    pred_temp = sm_models[i].model.predict_on_batch(X_temp)
+                    preds += flip(pred_temp, flip_type)
+        if config['test']['tta']:
+            preds /= (5 * 4)
+        else:
+            preds /= 5
         preds = postprocess(preds, config['postprocess'], True)
         for i in range(len(preds)):
             for j in range(4):

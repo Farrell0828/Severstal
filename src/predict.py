@@ -40,11 +40,12 @@ def _main_():
     image_id_class_id = []
     for X, filenames in tqdm(list(test_generator)):
         preds = sm_model.model.predict_on_batch(X)
-        for flip_type in ['ud', 'lr', 'udlr']:
-            X_temp = flip(X.copy(), flip_type)
-            pred_temp = sm_model.model.predict_on_batch(X_temp)
-            preds += flip(pred_temp, flip_type)
-        preds /= 4
+        if config['test']['tta']:
+            for flip_type in ['ud', 'lr', 'udlr']:
+                X_temp = flip(X.copy(), flip_type)
+                pred_temp = sm_model.model.predict_on_batch(X_temp)
+                preds += flip(pred_temp, flip_type)
+            preds /= 4
         preds = postprocess(preds, config['postprocess'], True)
         for i in range(len(preds)):
             for j in range(4):
