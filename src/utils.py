@@ -91,3 +91,13 @@ def dice_coef_score(true_masks, pred_masks):
     inter = (true_masks * pred_masks).sum(1).sum(1)
     union = true_masks.sum(1).sum(1) + pred_masks.sum(1).sum(1)
     return ((2*inter + eps) / (union + eps)).mean()
+
+def flip(imgs, flip_type):
+    if flip_type == 'ud':
+        return imgs[:, ::-1, ...]
+    elif flip_type == 'lr':
+        return imgs[:, :, ::-1, ...]
+    elif flip_type == 'udlr':
+        return imgs[:, ::-1, ::-1, ...]
+    else:
+        raise ValueError('flip type {} not support.'.format(flip_type))

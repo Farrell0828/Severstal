@@ -7,7 +7,7 @@ from tqdm import tqdm
 from model import SMModel 
 from process import postprocess 
 from dataset import DataGenerator 
-from utils import run_length_encode 
+from utils import run_length_encode, flip  
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 
@@ -22,18 +22,6 @@ argparser.add_argument(
     '--weights_path',
     help='Weights file path.'
 )
-
-def flip(imgs, flip_type):
-    if flip_type is None:
-        return imgs
-    elif flip_type == 'ud':
-        return imgs[:, ::-1, ...]
-    elif flip_type == 'lr':
-        return imgs[:, :, ::-1, ...]
-    elif flip_type == 'udlr':
-        return imgs[:, ::-1, ::-1, ...]
-    else:
-        raise ValueError('flip type {} not support.'.format(flip_type))
 
 def _main_():
     args = argparser.parse_args()
@@ -51,8 +39,8 @@ def _main_():
     encoded_pixels = []
     image_id_class_id = []
     for X, filenames in tqdm(list(test_generator)):
-        preds = 0
-        for flip_type in [None, 'ud', 'lr', 'udlr']:
+        preds = sm_model.model.predict_on_batch(X)
+        for flip_type in ['ud', 'lr', 'udlr']:
             X_temp = flip(X.copy(), flip_type)
             pred_temp = sm_model.model.predict_on_batch(X_temp)
             preds += flip(pred_temp, flip_type)
