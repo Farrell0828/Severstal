@@ -21,53 +21,35 @@ def rle2maskResize(rle, d_height, d_width):
     img = Image.fromarray(mask, mode='L').resize((d_width, d_height), resample=0)
     return np.array(img)
 
-def mask2contour(mask, width=3):
-    # CONVERT MASK TO ITS CONTOUR
-    w = mask.shape[1]
-    h = mask.shape[0]
-    mask2 = np.concatenate([mask[:,width:],np.zeros((h,width))],axis=1)
-    mask2 = np.logical_xor(mask,mask2)
-    mask3 = np.concatenate([mask[width:,:],np.zeros((width,w))],axis=0)
-    mask3 = np.logical_xor(mask,mask3)
-    return np.logical_or(mask2,mask3) 
-
-def mask2pad(mask, pad=2):
-    # ENLARGE MASK TO INCLUDE MORE SPACE AROUND DEFECT
-    w = mask.shape[1]
-    h = mask.shape[0]
-    
-    # MASK UP
-    for k in range(1,pad,2):
-        temp = np.concatenate([mask[k:,:],np.zeros((k,w))],axis=0)
-        mask = np.logical_or(mask,temp)
-    # MASK DOWN
-    for k in range(1,pad,2):
-        temp = np.concatenate([np.zeros((k,w)),mask[:-k,:]],axis=0)
-        mask = np.logical_or(mask,temp)
-    # MASK LEFT
-    for k in range(1,pad,2):
-        temp = np.concatenate([mask[:,k:],np.zeros((h,k))],axis=1)
-        mask = np.logical_or(mask,temp)
-    # MASK RIGHT
-    for k in range(1,pad,2):
-        temp = np.concatenate([np.zeros((h,k)),mask[:,:-k]],axis=1)
-        mask = np.logical_or(mask,temp)
-    
-    return mask 
-
 def run_length_encode(mask):
-    m = mask.T.flatten()
-    if m.sum() == 0:
-        rle=''
-    else:
-        start  = np.where(m[1: ] > m[:-1])[0]+2
-        end    = np.where(m[:-1] > m[1: ])[0]+2
-        length = end-start
-        rle = [start[0],length[0]]
-        for i in range(1,len(length)):
-            rle.extend([start[i],length[i]])
-        rle = ' '.join([str(r) for r in rle])
-    return rle
+    return mask2rle(mask)
+
+def mask2rle(img):
+    '''
+    img: numpy array, 1 - mask, 0 - background
+    Returns run length as string formated
+    '''
+    pixels= img.T.flatten()
+    pixels = np.concatenate([[0], pixels, [0]])
+    runs = np.where(pixels[1:] != pixels[:-1])[0] + 1
+    runs[1::2] -= runs[::2]
+    return ' '.join(str(x) for x in runs)
+ 
+def rle2mask(mask_rle, shape=(1600,256)):
+    '''
+    mask_rle: run-length as string formated (start length)
+    shape: (width,height) of array to return 
+    Returns numpy array, 1 - mask, 0 - background
+
+    '''
+    s = mask_rle.split()
+    starts, lengths = [np.asarray(x, dtype=int) for x in (s[0:][::2], s[1:][::2])]
+    starts -= 1
+    ends = starts + lengths
+    img = np.zeros(shape[0]*shape[1], dtype=np.uint8)
+    for lo, hi in zip(starts, ends):
+        img[lo:hi] = 1
+    return img.reshape(shape).T
 
 def visualize(image, mask, original_image=None, original_mask=None):
     fontsize = 18
