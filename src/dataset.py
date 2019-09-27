@@ -91,7 +91,7 @@ class DataGenerator(Sequence):
                 if y.sum() != len(indexes) * self.height * self.width:
                     warnings.warn('Some pixels have not only one label is true.')
 
-        if self.split == 'val':
+        elif self.split == 'val':
             if self.full_size_mask:
                 y = np.empty((len(indexes), 256, 1600, self.n_class), dtype=np.uint8)
             else:
@@ -154,17 +154,17 @@ class DataGenerator(Sequence):
 
 
 if __name__ == '__main__':
-    config_path = './configs/config.json'
+    config_path = './configs/config_mibook.json'
     with open(config_path) as config_buffer:    
         config = json.loads(config_buffer.read())
-    generator = DataGenerator(config['test'], None, 4, 'test')
+    generator = DataGenerator(config['train'], None, 5, 'train')
     i = np.random.randint(0, len(generator))
-    X = generator[i]
+    X, y = generator[i]
     print(X.shape, X.dtype)
-    # print(y.shape, y.dtype)
+    print(y.shape, y.dtype)
     img = Image.fromarray(X[0].astype(np.uint8))
-    # masks = [Image.fromarray(y[0, :, :, i]*255) for i in range(5)]
+    masks = [Image.fromarray(y[0, :, :, i]*255) for i in range(5)]
     img.show(title='image')
-    # for i in range(5): 
-    #     masks[i].show(title='mask[{}]'.format(i))
+    for i in range(5): 
+        masks[i].show(title='mask[{}]'.format(i))
 
