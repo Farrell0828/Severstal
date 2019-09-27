@@ -217,7 +217,7 @@ class DataGenerator4Cls(Sequence):
                     augmented = self.aug(image=X[i, ])
                     X[i, ] = augmented['image']
             if self.n_class == 5:
-                y = self.df[['dt_0', 'dt_1', 'dt_2', 'dt_3', 'dt_4']].iloc[indexes].values
+                y = self.df[['dt_0', 'dt_1', 'dt_2', 'dt_3', 'dt_4']].iloc[indexes].values.astype(np.uint8)
             elif self.n_class == 2:
                 y = (self.df['MaskCount'].iloc[indexes] > 0).values.astype(np.uint8)
         else:
@@ -261,4 +261,5 @@ if __name__ == '__main__':
     print(X.shape, X.dtype)
     print(y.shape, y.dtype)
     img = Image.fromarray(X[0].astype(np.uint8))
+    img.show()
     print(y)
