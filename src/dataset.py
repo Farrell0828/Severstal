@@ -4,6 +4,7 @@ import json
 
 import numpy as np 
 import pandas as pd 
+import albumentations as albu 
 
 from glob import glob 
 from keras.utils import Sequence 
@@ -32,6 +33,8 @@ class DataGenerator(Sequence):
         self.width = config['image_width']
         self.batch_size = config['batch_size']
         self.aug_pipline = config['aug_pipline']
+        if config['aug_pipline'] != []:
+            self.build_aug()
         
         if split != 'test':
             self.fold = config['fold']
@@ -63,7 +66,32 @@ class DataGenerator(Sequence):
         indexes = self.indexes[index*self.batch_size : (index+1)*self.batch_size]
         X = np.empty((len(indexes), self.height, self.width, 3), dtype=np.float32)
         
-        if self.split != 'test':
+        if self.split == 'train':
+            y = y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
+            for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
+                X[i, ] = Image.open(os.path.join(self.data_folder, file_name)).resize((self.width, self.height))
+                for j in range(4):
+                    y[i, :, :, j] = rle2maskResize(rle=self.df['EncodedPixels_' + str(j+1)].iloc[indexes[i]], 
+                                                   d_height=self.height, d_width=self.width)
+                if self.n_class == 5:
+                    y[i, :, :, 4] = (y[i, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
+                    if y.sum() != len(indexes) * self.height * self.width:
+                        warnings.warn('Some pixels have not only one label is true.')
+                if self.aug_pipline != []:
+                    augmented = self.aug(image=X[i, ], mask=y[i, :, :, 0], 
+                                         mask1=y[i, :, :, 1], mask2=y[i, :, :, 2],
+                                         mask3=y[i, :, :, 3])
+                    X[i, ] = augmented['image']
+                    y[i, :, :, 0] = augmented['mask']
+                    y[i, :, :, 1] = augmented['mask1']
+                    y[i, :, :, 2] = augmented['mask2']
+                    y[i, :, :, 3] = augmented['mask3']
+            if self.n_class == 5:
+                y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
+                if y.sum() != len(indexes) * self.height * self.width:
+                    warnings.warn('Some pixels have not only one label is true.')
+
+        elif self.split == 'val':
             if self.full_size_mask:
                 y = np.empty((len(indexes), 256, 1600, self.n_class), dtype=np.uint8)
             else:
@@ -82,36 +110,61 @@ class DataGenerator(Sequence):
                 if ((not self.full_size_mask and y.sum() != len(indexes) * self.height * self.width)
                     or (self.full_size_mask and y.sum() != len(indexes) * 256 * 1600)):
                     warnings.warn('Some pixels have not only one label is true.')
+        
         else:
             filenames = []
             for i, file_name in enumerate([self.image_file_paths[index] for index in indexes]):
                 X[i, ] = Image.open(file_name).resize((self.width, self.height))
                 filenames.append(file_name.split('/')[-1])
 
-        if self.aug_pipline != []: X = self.aug(X)
         if self.preprocessing is not None: X = self.preprocessing(X)
         
         if self.split != 'test': 
             return X, y
         else:
             return X, filenames
-
-    def aug(self, X):
-        return X
+    
+    def build_aug(self):
+        additional_targets = {
+            'mask1': 'mask',
+            'mask2': 'mask',
+            'mask3': 'mask'
+        }
+        aug = []
+        for aug_type in self.aug_pipline:
+            if aug_type == 'Flip':
+                aug += [albu.HorizontalFlip(), albu.VerticalFlip()]
+            elif aug_type == 'Non-Spatial':
+                aug.append(albu.OneOf([
+                    albu.RandomContrast(),
+                    albu.RandomGamma(),
+                    albu.RandomBrightness(),
+                ], p=0.3))
+            elif aug_type == "Non-Rigid":
+                aug.append(albu.OneOf([
+                    albu.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+                    albu.GridDistortion(),
+                    albu.OpticalDistortion(distort_limit=2, shift_limit=0.5),
+                ], p=0.3))
+            elif aug_type == 'Rotate':
+                aug.append(albu.ShiftScaleRotate(interpolation=0))
+            else:
+                raise ValueError('aug type {} not support.'.format(aug_type))
+        self.aug = albu.Compose(aug, p=1, additional_targets=additional_targets)
 
 
 if __name__ == '__main__':
-    config_path = './configs/config.json'
+    config_path = './configs/config_mibook.json'
     with open(config_path) as config_buffer:    
         config = json.loads(config_buffer.read())
-    generator = DataGenerator(config['test'], None, 4, 'test')
+    generator = DataGenerator(config['train'], None, 5, 'train')
     i = np.random.randint(0, len(generator))
-    X = generator[i]
+    X, y = generator[i]
     print(X.shape, X.dtype)
-    # print(y.shape, y.dtype)
+    print(y.shape, y.dtype)
     img = Image.fromarray(X[0].astype(np.uint8))
-    # masks = [Image.fromarray(y[0, :, :, i]*255) for i in range(5)]
+    masks = [Image.fromarray(y[0, :, :, i]*255) for i in range(5)]
     img.show(title='image')
-    # for i in range(5): 
-    #     masks[i].show(title='mask[{}]'.format(i))
+    for i in range(5): 
+        masks[i].show(title='mask[{}]'.format(i))
 

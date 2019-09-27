@@ -250,3 +250,35 @@ mask_heavy = augmented['mask']
 visualize(image_heavy, mask_heavy, original_image=image, original_mask=mask)
 
 #%%
+additional_targets = {
+    'mask1': 'mask',
+    'mask2': 'mask',
+    'mask3': 'mask',
+    'mask4': 'mask'
+}
+# SIIM-ACR 1st Place Solution's Augmentation.
+aug = albu.Compose([
+    albu.HorizontalFlip(),
+    albu.VerticalFlip(),
+    albu.OneOf([
+        albu.RandomContrast(),
+        albu.RandomGamma(),
+        albu.RandomBrightness(),
+        ], p=0.3),
+    albu.OneOf([
+        albu.ElasticTransform(alpha=120, sigma=120 * 0.05, alpha_affine=120 * 0.03),
+        albu.GridDistortion(),
+        albu.OpticalDistortion(distort_limit=2, shift_limit=0.5),
+        ], p=0.3),
+    albu.ShiftScaleRotate(),
+    albu.Resize(img_size,img_size,always_apply=True),
+], p=1, additional_targets=additional_targets)
+
+augmented = aug(image=image, 
+                mask =masks[:, :, 0], 
+                mask1=masks[:, :, 1], 
+                mask2=masks[:, :, 2], 
+                mask3=masks[:, :, 3])
+
+image = augmented['image']
+masks

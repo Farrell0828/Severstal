@@ -5,3 +5,4 @@ k-fold/
 logs/
 playground.py
 model.pyc
+config_mibook.json
