@@ -255,7 +255,7 @@ if __name__ == '__main__':
     config_path = './configs/config_mibook.json'
     with open(config_path) as config_buffer:    
         config = json.loads(config_buffer.read())
-    generator = DataGenerator(config['train'], None, 5, 'train')
+    generator = DataGenerator4Cls(config['train'], None, 5, 'train')
     i = np.random.randint(0, len(generator))
     X, y = generator[i]
     print(X.shape, X.dtype)
