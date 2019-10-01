@@ -91,7 +91,7 @@ def sgm_multi_cls_loss(gamma=2.0, alpha=0.25):
         pt3_1 = K.clip(pt3_1, K.epsilon(), 1. - K.epsilon())
         pt3_0 = K.clip(pt3_0, K.epsilon(), 1. - K.epsilon())
         cls3_loss = -alpha * K.pow(1. - pt3_1, gamma) * K.log(pt3_1) \
-                    -(1 - alpha) * K.pow(pt3_0, gamma) * K.log(1. - pt2_0)
+                    -(1 - alpha) * K.pow(pt3_0, gamma) * K.log(1. - pt3_0)
 
         return 4*sgm_loss + cls0_loss + cls1_loss + cls2_loss + cls3_loss
 
