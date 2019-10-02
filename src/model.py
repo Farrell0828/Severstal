@@ -34,8 +34,8 @@ class SMModel(object):
             self.model = self._build()
         else:
             with tf.device('/cpu:0'):
-                model = self._build()
-            self.model = keras.utils.multi_gpu_model(model, gpus=n_available_gpus)
+                self.cpu_model = self._build()
+            self.model = keras.utils.multi_gpu_model(self.cpu_model, gpus=n_available_gpus)
 
     def _build(self):
         if self.type == 'Unet':
@@ -89,12 +89,12 @@ class SMModel(object):
         log_folder_path = './logs/fold{}'.format(config['fold'])
         if not os.path.exists(log_folder_path): os.mkdir(log_folder_path)
         tensorboard = TensorBoard(log_dir=log_folder_path, update_freq='batch')
-        reduce_lr = ReduceLROnPlateau(patience=5, 
+        reduce_lr = ReduceLROnPlateau(patience=10, 
                                       monitor=monitor,
                                       mode='max',
                                       verbose=1, 
                                       min_delta=1e-5)
-        early_stopping = EarlyStopping(patience=8, 
+        early_stopping = EarlyStopping(patience=15, 
                                        monitor=monitor,
                                        mode='max',
                                        verbose=1, 
@@ -115,6 +115,9 @@ class SMModel(object):
                                  epochs=config['epochs'],
                                  validation_data=val_generator, 
                                  callbacks=callbacks)
+
+        self.model.load_weights(save_weights_path)
+        self.cpu_model.save_weights(save_weights_path[:-3] + '_cpu.h5')
 
 
 if __name__ == '__main__':
