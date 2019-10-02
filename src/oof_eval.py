@@ -8,7 +8,7 @@ from process import postprocess
 from dataset import DataGenerator 
 from utils import dice_coef_score 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = ''
+os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
