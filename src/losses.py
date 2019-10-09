@@ -1,5 +1,6 @@
 from keras import backend as K 
 import tensorflow as tf 
+from segmentation_models.losses import bce_dice_loss, bce_jaccard_loss  
 
 def categorical_focal_loss(gamma=2.0, alpha=0.25):
 

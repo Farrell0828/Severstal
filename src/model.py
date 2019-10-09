@@ -7,15 +7,16 @@ import tensorflow as tf
 import numpy as np 
 from keras import backend as K 
 from keras.models import Model 
-from keras.losses import binary_crossentropy, categorical_crossentropy 
 from keras.optimizers import Adam, SGD 
-from keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau, ModelCheckpoint 
+from keras.callbacks import TensorBoard, EarlyStopping, ReduceLROnPlateau 
+from keras.callbacks import ModelCheckpoint, CSVLogger  
 from tensorflow.python.client import device_lib 
 from dataset import DataGenerator 
-from metrics import dice_coef_for_sigmoid, dice_coef_for_softmax, acc_for_cls 
-from metrics import acc_for_cls0, acc_for_cls1, acc_for_cls2, acc_for_cls3 
+from metrics import dice_coef_for_sigmoid, dice_coef_for_softmax 
+from metrics import acc_for_cls, acc_for_cls0, acc_for_cls1, acc_for_cls2, acc_for_cls3 
 from callbacks import DiceCoefCallback 
 from losses import categorical_focal_loss, sgm_cls_loss, sgm_multi_cls_loss 
+from losses import bce_dice_loss, bce_jaccard_loss 
 
 
 class SMModel(object):
@@ -72,7 +73,7 @@ class SMModel(object):
                                       n_class=self.n_class,
                                       split='val')
         if self.activate == 'sigmoid':
-            loss = sm.losses.jaccard_loss
+            loss = bce_dice_loss
             dice_coef = dice_coef_for_sigmoid
             monitor = 'val_dice_coef_for_sigmoid'
         elif self.activate == 'softmax':
@@ -82,19 +83,22 @@ class SMModel(object):
             dice_coef = dice_coef_for_softmax
             monitor = 'val_dice_coef_for_softmax'
 
+        metrics=[dice_coef, acc_for_cls, acc_for_cls0, 
+                 acc_for_cls1, acc_for_cls2, acc_for_cls3]
+
         self.model.compile(optimizer=Adam(lr=config['init_lr']),
                            loss=loss,
-                           metrics=[dice_coef, acc_for_cls0, acc_for_cls1, acc_for_cls2, acc_for_cls3])
+                           metrics=metrics)
 
         log_folder_path = './logs/fold{}'.format(config['fold'])
         if not os.path.exists(log_folder_path): os.mkdir(log_folder_path)
         tensorboard = TensorBoard(log_dir=log_folder_path, update_freq='batch')
-        reduce_lr = ReduceLROnPlateau(patience=10, 
+        reduce_lr = ReduceLROnPlateau(patience=5, 
                                       monitor=monitor,
                                       mode='max',
                                       verbose=1, 
                                       min_delta=1e-5)
-        early_stopping = EarlyStopping(patience=15, 
+        early_stopping = EarlyStopping(patience=8, 
                                        monitor=monitor,
                                        mode='max',
                                        verbose=1, 
@@ -108,8 +112,9 @@ class SMModel(object):
                                      verbose=1,
                                      save_weights_only=True, 
                                      save_best_only=True)
+        csv_logger = CSVLogger(os.path.join(log_folder_path, 'training_log.csv'))
 
-        callbacks = [tensorboard, early_stopping, reduce_lr, checkpoint]
+        callbacks = [tensorboard, early_stopping, reduce_lr, checkpoint, csv_logger]
         
         self.model.fit_generator(generator=train_generator, 
                                  epochs=config['epochs'],

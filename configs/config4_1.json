@@ -1,0 +1,42 @@
+{
+    "model" : {
+        "type"                     : "Unet",
+        "backbone"                 : "resnet34",
+        "encoder_weights"          : "imagenet",
+        "n_class"                  : 4,
+        "activation"               : "sigmoid"
+    },
+
+    "train": {
+        "images_folder"            : "/home/fanqimen/projects/Severstal/data/train_images", 
+        "csv_file_path"            : "/home/fanqimen/projects/Severstal/data/train_new.csv", 
+        "image_height"             : 128, 
+        "image_width"              : 800, 
+        "aug_pipline"              : ["Flip", "Non-Spatial"],
+        "fold"                     : 0,
+        "alpha"                    : 0.25,
+        "gamma"                    : 2.0,
+        "init_lr"                  : 1e-4,
+        "batch_size"               : 32,
+        "epochs"                   : 200,
+        "save_model_folder"        : "/home/fanqimen/projects/Severstal/k-fold/config3/weights/"
+    }, 
+
+    "test": {
+        "images_folder"            : "/home/fanqimen/projects/Severstal/data/test_images",
+        "sample_submission_path"   : "/home/fanqimen/projects/Severstal/data/sample_submission.csv",
+        "image_height"             : 128,
+        "image_width"              : 800,
+        "aug_pipline"              : [],
+        "batch_size"               : 64
+    },
+
+    "postprocess": {
+        "threshold"                : 0.5,
+        "triplet"                  : true,
+        "threshold_high"           : 0.7,
+        "threshold_low"            : 0.3,
+        "filter_small_region"      : true,
+        "min_size"                 : [512, 1024, 1024, 4096]
+    }
+}
