@@ -3,7 +3,7 @@ import json
 import os 
 from model import SMModel 
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 
 argparser = argparse.ArgumentParser()
 argparser.add_argument(
@@ -24,6 +24,7 @@ if __name__ == '__main__':
     config_path = args.config
     with open(config_path) as config_buffer:    
         config = json.loads(config_buffer.read())
+    print(config)
     fold = int(args.fold)
     if fold == -1:
         for i in range(5):

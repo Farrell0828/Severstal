@@ -67,16 +67,12 @@ class DataGenerator(Sequence):
         X = np.empty((len(indexes), self.height, self.width, 3), dtype=np.float32)
         
         if self.split == 'train':
-            y = y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
+            y = np.empty((len(indexes), self.height, self.width, self.n_class), dtype=np.uint8)
             for i, file_name in enumerate(self.df['ImageId'].iloc[indexes]):
                 X[i, ] = Image.open(os.path.join(self.data_folder, file_name)).resize((self.width, self.height))
                 for j in range(4):
                     y[i, :, :, j] = rle2maskResize(rle=self.df['EncodedPixels_' + str(j+1)].iloc[indexes[i]], 
                                                    d_height=self.height, d_width=self.width)
-                if self.n_class == 5:
-                    y[i, :, :, 4] = (y[i, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
-                    if y.sum() != len(indexes) * self.height * self.width:
-                        warnings.warn('Some pixels have not only one label is true.')
                 if self.aug_pipline != []:
                     augmented = self.aug(image=X[i, ], mask=y[i, :, :, 0], 
                                          mask1=y[i, :, :, 1], mask2=y[i, :, :, 2],
@@ -89,7 +85,7 @@ class DataGenerator(Sequence):
             if self.n_class == 5:
                 y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
                 if y.sum() != len(indexes) * self.height * self.width:
-                    warnings.warn('Some pixels have not only one label is true.')
+                    warnings.warn('Training set after aug some pixels have not only one label is true.')
 
         elif self.split == 'val':
             if self.full_size_mask:
@@ -109,7 +105,7 @@ class DataGenerator(Sequence):
                 y[:, :, :, 4] = (y[:, :, :, :4].sum(axis=-1) == 0).astype(np.uint8)
                 if ((not self.full_size_mask and y.sum() != len(indexes) * self.height * self.width)
                     or (self.full_size_mask and y.sum() != len(indexes) * 256 * 1600)):
-                    warnings.warn('Some pixels have not only one label is true.')
+                    warnings.warn('Validation set some pixels have not only one label is true.')
         
         else:
             filenames = []
@@ -132,8 +128,10 @@ class DataGenerator(Sequence):
         }
         aug = []
         for aug_type in self.aug_pipline:
-            if aug_type == 'Flip':
-                aug += [albu.HorizontalFlip(), albu.VerticalFlip()]
+            if aug_type == 'V-Flip':
+                aug += [albu.VerticalFlip(p=0.5)]
+            elif aug_type == 'H-Flip':
+                aug += [albu.HorizontalFlip(p=0.5)]
             elif aug_type == 'Non-Spatial':
                 aug.append(albu.OneOf([
                     albu.RandomContrast(),
@@ -234,7 +232,7 @@ class DataGenerator4Cls(Sequence):
         aug = []
         for aug_type in self.aug_pipline:
             if aug_type == 'Flip':
-                aug += [albu.HorizontalFlip(), albu.VerticalFlip()]
+                aug += [albu.VerticalFlip()]
             elif aug_type == 'Non-Spatial':
                 aug.append(albu.OneOf([
                     albu.RandomContrast(),

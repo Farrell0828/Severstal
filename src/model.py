@@ -77,18 +77,14 @@ class SMModel(object):
             dice_coef = dice_coef_for_sigmoid
             monitor = 'val_dice_coef_for_sigmoid'
         elif self.activate == 'softmax':
-            bias = self.model.layers[-2].weights[1]
-            K.set_value(bias, np.full(bias.shape, -1.99))
             loss = sgm_multi_cls_loss(alpha=config['alpha'], gamma=config['gamma'])
             dice_coef = dice_coef_for_softmax
             monitor = 'val_dice_coef_for_softmax'
 
         metrics=[dice_coef, acc_for_cls, acc_for_cls0, 
                  acc_for_cls1, acc_for_cls2, acc_for_cls3]
-
-        self.model.compile(optimizer=Adam(lr=config['init_lr']),
-                           loss=loss,
-                           metrics=metrics)
+        optimizer = Adam(lr=config['init_lr'], clipnorm=1.0)
+        self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
         log_folder_path = './logs/fold{}'.format(config['fold'])
         if not os.path.exists(log_folder_path): os.mkdir(log_folder_path)
@@ -97,7 +93,8 @@ class SMModel(object):
                                       monitor=monitor,
                                       mode='max',
                                       verbose=1, 
-                                      min_delta=1e-5)
+                                      min_delta=1e-5,
+                                      min_lr=1e-6)
         early_stopping = EarlyStopping(patience=8, 
                                        monitor=monitor,
                                        mode='max',
@@ -119,7 +116,9 @@ class SMModel(object):
         self.model.fit_generator(generator=train_generator, 
                                  epochs=config['epochs'],
                                  validation_data=val_generator, 
-                                 callbacks=callbacks)
+                                 callbacks=callbacks, 
+                                 max_queue_size=16,
+                                 workers=16)
 
         self.model.load_weights(save_weights_path)
         self.cpu_model.save_weights(save_weights_path[:-3] + '_cpu.h5')
