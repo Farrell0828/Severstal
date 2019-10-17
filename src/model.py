@@ -81,6 +81,13 @@ class SMModel(object):
             dice_coef = dice_coef_for_softmax
             monitor = 'val_dice_coef_for_softmax'
 
+        per_train_weights_folder = config.get('per_train_weights_folder', None)
+        if per_train_weights_folder is not None:
+            per_train_weights_path = os.path.join(per_train_weights_folder, 
+                                                  'val_best_fold_{}_weights.h5'.format(config['fold']))
+            self.model.load_weights(per_train_weights_path)
+            print('Loaded per-trained weights from ', per_train_weights_path)
+
         metrics=[dice_coef, acc_for_cls, acc_for_cls0, 
                  acc_for_cls1, acc_for_cls2, acc_for_cls3]
         optimizer = Adam(lr=config['init_lr'], clipnorm=1.0)
