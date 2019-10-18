@@ -82,7 +82,7 @@ class SMModel(object):
             monitor = 'val_dice_coef_for_softmax'
 
         per_train_weights_folder = config.get('per_train_weights_folder', None)
-        if per_train_weights_folder is not None:
+        if per_train_weights_folder is not None and per_train_weights_folder != "":
             per_train_weights_path = os.path.join(per_train_weights_folder, 
                                                   'val_best_fold_{}_weights.h5'.format(config['fold']))
             self.model.load_weights(per_train_weights_path)
