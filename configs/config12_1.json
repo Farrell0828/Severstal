@@ -20,7 +20,7 @@
         "batch_size"               : 16,
         "epochs"                   : 300,
         "per_train_weights_folder" : "",
-        "save_model_folder"        : "/home/cdsw/Severstal/k-fold/config12/weights/"
+        "save_model_folder"        : "/home/cdsw/Severstal/k-fold/config12/weights"
     }, 
 
     "test": {

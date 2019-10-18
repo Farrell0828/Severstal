@@ -27,7 +27,7 @@ class SMModel(object):
         self.n_class = config['n_class']
         self.activate = config['activation']
         self.encoder_weights = config.get('encoder_weights', None)
-        self.preprocessing = sm.backbones.get_preprocessing(self.backbone)
+        self.preprocessing = sm.get_preprocessing(self.backbone)
 
         local_device_protos = device_lib.list_local_devices()
         n_available_gpus = len([x.name for x in local_device_protos if x.device_type == 'GPU'])
@@ -93,7 +93,7 @@ class SMModel(object):
         optimizer = Adam(lr=config['init_lr'], clipnorm=1.0)
         self.model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
 
-        log_folder_path = './logs/fold{}'.format(config['fold'])
+        log_folder_path = './logs/' + config['save_model_folder'].split('/')[-2] + '_fold{}'.format(config['fold'])
         if not os.path.exists(log_folder_path): os.mkdir(log_folder_path)
         tensorboard = TensorBoard(log_dir=log_folder_path, update_freq='batch')
         reduce_lr = ReduceLROnPlateau(patience=5, 
